@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <conio.h>
 #include "complex"
+#include <vector>
+#include <iterator>
 
 using namespace std;
 
