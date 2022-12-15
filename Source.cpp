@@ -159,7 +159,13 @@ complex<float> scan2()
 
 
 template <class Type>
-double determinant(const matrix<Type>& m, int N);
+bool operator == (const complex<Type>& v, bool f) {
+	if (v.real() == f && v.imag() == f) return true;
+	else return false;
+	}
+template <class Type>
+Type determinant(const matrix<Type>&m, int N);
+
 
 template <class Type>
 class matrix
