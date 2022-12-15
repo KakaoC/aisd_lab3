@@ -171,7 +171,7 @@ template <class Type>
 class matrix
 {
 private:
-	Type** data;
+	vector<vector<Type>> data;
 	int columns, rows;
 
 public:
@@ -179,17 +179,12 @@ public:
 	{
 		columns = 3;
 		rows = 3;
-		data = new Type * [rows];
-		for (int i = 0; i < rows; ++i)
-		{
-			data[i] = new Type[columns];
-		}
-		for (int i = 0; i < rows; i++)
-		{
-			for (int j = 0; j < columns; j++)
-			{
-				data[i][j] = 1;
+		for (int i = 0; i < 3; i++) {
+			vector<Type> v(3);
+			for (int j = 0; j < 3; j++) {
+				v[j] = 0;
 			}
+			data.push_back(v); // возврат в матрицу
 		}
 	}
 
@@ -200,19 +195,16 @@ public:
 		columns = columns_;
 		rows = rows_;
 
-		data = new Type * [rows];
-		for (int i = 0; i < rows; ++i)
-		{
-			data[i] = new Type[columns];
-		}
+
 
 		cout << "Input your values" << "\n";
 		for (int i = 0; i < rows; i++) {
+			vector<Type> v(columns);
 			for (int j = 0; j < columns; j++)
 			{
 				Type _temp;
 				cout << "Input value of index [" << i + 1 << "][" << j + 1 << "]: ";
-				_temp = scan2<Type>();
+				v[j] = scan2<Type>();
 				data[i][j] = _temp;
 				cout << endl;
 			}
