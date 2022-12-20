@@ -205,52 +205,31 @@ public:
 				Type _temp;
 				cout << "Input value of index [" << i + 1 << "][" << j + 1 << "]: ";
 				v[j] = scan2<Type>();
-				data[i][j] = _temp;
+
 				cout << endl;
 			}
+			data.push_back(v);
 		}
 	}
 
-	matrix(const matrix& m)
-	{
-		data = new Type * [m.rows];
-		for (int i = 0; i < m.rows; ++i)
-		{
-			data[i] = new Type[m.columns];
-		}
+	matrix(const matrix&) = default;
 
-		rows = m.rows;
-		columns = m.columns;
-
-		for (int i = 0; i < rows; i++)
-		{
-			for (int j = 0; j < columns; j++)
-			{
-				data[i][j] = m.data[i][j];
-			}
-		}
-
-	}
-
-	matrix(Type** temp, int rows_, int columns_)
-	{
+	matrix(vector<vector<Type>> temp, int rows_, int columns_) {
 		if (rows_ < 1 or columns_ < 1) throw "Invalid matrix size";
 
 		rows = rows_;
 		columns = columns_;
 
-		data = new Type * [rows];
-		for (int i = 0; i < rows; ++i)
-		{
-			data[i] = new Type[columns];
-		}
+
 
 		for (int i = 0; i < rows; i++)
 		{
+			vector<Type> v(columns);
 			for (int j = 0; j < columns; j++)
 			{
-				data[i][j] = temp[i][j];
+				v[j] = temp[i][j];
 			}
+			data.push_back(v);
 		}
 	}
 
@@ -260,76 +239,58 @@ public:
 
 		rows = columns = 3;
 
-		data = new Type * [rows];
-		for (int i = 0; i < rows; i++)
+		for (int i = 0; i < 3; i++)
 		{
-			data[i] = new Type[columns];
+			vector<Type> v(3);
+			data.push_back(v);
 		}
-
 		for (int i = 0; i < rows; i++)
 		{
-			int k = 0;
 			int j = 0;
 
-			data[j][i] = a.data[k][i];
+			data[j][i] = a.data[0][i];
 			j++;
 
-			data[j][i] = b.data[k][i];
+			data[j][i] = b.data[0][i];
 			j++;
 
-			data[j][i] = c.data[k][i];
+			data[j][i] = c.data[0][i];
 		}
 
 	}
 
-	~matrix()
-	{
-		for (int i = 0; i < rows; i++)
-		{
-			delete[] data[i];
-		}
-		delete[] data;
-	}
+	~matrix() = default;
 
 	//Getters
 	int get_rows() const { return rows; }
 
 	int get_columns() const { return columns; }
 
-	// îïåðàòîð () äëÿ ÷òåíèÿ/çàïèñè ýëåìåíòà ìàòðèöû ïî óêàçàííûì èíäåêñàì;
-	Type& operator()(int i, int j) const
+	// оператор () для чтения/записи элемента матрицы по указанным индексам;
+	Type& operator()(int i, int j)
 	{
 		if ((i < 0 or i >= rows) or (j < 0 or j >= columns)) throw "Invalid index";
 		return data[i][j];
 	}
 
-	//îïåðàòîðû ñëîæåíèÿ è âû÷èòàíèÿ ìàòðèö;
+	const Type& operator()(int i, int j) const
+	{
+		if ((i < 0 or i >= rows) or (j < 0 or j >= columns)) throw "Invalid index";
+		return data[i][j];
+	}
+
+	//операторы сложения и вычитания матриц;
 	matrix& operator+=(const matrix& m)
 	{
 		if (rows != m.rows or columns != m.columns) throw "Size of matrix doesn't equal";
-		Type** temp;
-
-		temp = new Type * [m.rows];
-		for (int i = 0; i < m.rows; ++i)
-		{
-			temp[i] = new Type[m.columns];
-		}
 
 		for (int i = 0; i < rows; ++i)
 		{
 			for (int j = 0; j < columns; ++j)
 			{
-				temp[i][j] = data[i][j] + m.data[i][j];
+				data[i][j] = data[i][j] + m.data[i][j];
 			}
 		}
-
-		for (int i = 0; i < rows; i++)
-		{
-			delete[] data[i];
-		}
-		delete[] data;
-
-		data = temp;
 		return *this;
 	}
 
@@ -343,29 +304,14 @@ public:
 	matrix& operator-=(const matrix& m)
 	{
 		if (rows != m.rows or columns != m.columns) throw "Size of matrix doesn't equal";
-		Type** temp;
-
-		temp = new Type * [m.rows];
-		for (int i = 0; i < m.rows; ++i)
-		{
-			temp[i] = new Type[m.columns];
-		}
 
 		for (int i = 0; i < rows; ++i)
 		{
 			for (int j = 0; j < columns; ++j)
 			{
-				temp[i][j] = data[i][j] - m.data[i][j];
+				data[i][j] = data[i][j] - m.data[i][j];
 			}
 		}
-
-		for (int i = 0; i < rows; i++)
-		{
-			delete[] data[i];
-		}
-		delete[] data;
-
-		data = temp;
 		return *this;
 	}
 
@@ -376,40 +322,26 @@ public:
 		return temp;
 	}
 
-	//îïåðàòîð óìíîæåíèÿ ìàòðèö;
+	//оператор умножения матриц;
 	matrix& operator*=(const matrix& m)
 	{
 		if (columns != m.rows) throw "Size of matrix doesn't equal";
 
-		Type** temp;
-
-		temp = new Type * [rows];
-		for (int i = 0; i < rows; i++)
-		{
-			temp[i] = new Type[m.columns];
-		}
-
 		for (int rows_ = 0; rows_ < rows; rows_++)
 		{
+			vector<Type> v(m.columns);
 			for (int col = 0; col < m.columns; col++)
 			{
-				temp[rows_][col] = 0;
+				v.push_back(0);
 				for (int in_column = 0; in_column < columns; in_column++)
 				{
-					temp[rows_][col] += data[rows_][in_column] * m.data[in_column][col];
+					v[col] += data[rows_][in_column] * m.data[in_column][col];
 				}
 			}
+			data[rows_] = v;
 		}
 
 		columns = m.columns;
-
-		for (int i = 0; i < rows; i++)
-		{
-			delete[] data[i];
-		}
-		delete[] data;
-
-		data = temp;
 		return *this;
 	}
 
@@ -420,7 +352,7 @@ public:
 		return temp;
 	}
 
-	//îïåðàòîð óìíîæåíèÿ ìàòðèöû íà ñêàëÿð(îáåñïå÷èòü êîììóòàòèâíîñòü);
+	//оператор умножения матрицы на скаляр(обеспечить коммутативность);
 
 	matrix& operator *= (double n)
 	{
@@ -439,7 +371,7 @@ public:
 		temp *= n;
 		return temp;
 	}
-	//îïåðàòîð äåëåíèÿ ìàòðèöû íà ñêàëÿð;
+	//оператор деления матрицы на скаляр;
 	matrix& operator/=(double n)
 	{
 		if (n == 0) throw "Division by zero";
@@ -459,7 +391,7 @@ public:
 		return temp;
 	}
 
-	//ìåòîä âû÷èñëåíèÿ ñëåäà ìàòðèöû - ñóììà ÷ëåíîâ ãëàâíîé äèàãîíàëè, ïðè óñëîâèè, ÷òî ìàòðèöà - êâàäðàòè÷íàÿ
+	//метод вычисления следа матрицы - сумма членов главной диагонали, при условии, что матрица - квадратичная
 	Type trace()
 	{
 		if (rows != columns) throw "The matrix is not square";
@@ -471,7 +403,7 @@ public:
 		return trace;
 	}
 
-	//Ñðàâíåíèå ìàòðèö
+	//Сравнение матриц
 	bool operator==(const matrix& m)
 	{
 		if (rows != m.rows or columns != m.columns)
@@ -496,32 +428,9 @@ public:
 		return !(*this == m);
 	}
 
-	friend double determinant<>(const matrix<Type>& m, int N);
+	friend Type determinant<>(const matrix<Type>& m, int N);
 
-	matrix& operator = (const matrix& m) {
-		for (int i = 0; i < rows; i++)
-		{
-			delete[] data[i];
-		}
-		delete[] data;
-		data = new Type * [m.rows];
-		for (int i = 0; i < m.rows; ++i)
-		{
-			data[i] = new Type[m.columns];
-		}
-
-		rows = m.rows;
-		columns = m.columns;
-
-		for (int i = 0; i < rows; i++)
-		{
-			for (int j = 0; j < columns; j++)
-			{
-				data[i][j] = m.data[i][j];
-			}
-		}
-		return *this;
-	}
+	matrix& operator = (const matrix&) = default;
 
 	friend matrix<Type>& operator*= (double n, matrix<Type>& m)
 	{
@@ -541,13 +450,24 @@ public:
 		return n *= temp;
 	}
 
+	auto begin()
+	{
+		return data.begin();
+
+	}
+
+	auto end()
+	{
+		return data.end();
+	}
+
 	friend ostream& operator << (ostream& os, const matrix& m)
 	{
-		for (int i = 0; i < m.get_rows(); ++i)
+		for (auto i : m.data)
 		{
-			for (int j = 0; j < m.get_columns(); ++j)
+			for (auto j : i)
 			{
-				os << left << m(i, j) << '\t';
+				os << left << j << '\t';
 			}
 			os << endl;
 		}
@@ -557,7 +477,8 @@ public:
 	friend bool coplanarns(const matrix& a, const matrix& b, const matrix& c)
 	{
 		matrix final(a, b, c);
-		double  det = determinant(final, final.get_columns());
+		cout << final;
+		Type det = determinant(final, final.get_columns());
 		if (det == 0) return true;
 		else return false;
 	}
@@ -565,9 +486,10 @@ public:
 };
 
 template <class Type>
-double determinant(const matrix<Type>& m, int N)
+Type determinant(const matrix<Type>& m, int N)
 {
-	if (m.columns != m.rows) {
+	if (m.columns != m.rows)
+	{
 		return 0;
 	}
 	else if (N == 1) {
@@ -577,14 +499,11 @@ double determinant(const matrix<Type>& m, int N)
 		return m.data[0][0] * m.data[1][1] - m.data[0][1] * m.data[1][0];
 	}
 	else if (N >= 3) {
-		double determ = 0;
+		Type determ = 0;
 
 		for (int k = 0; k < N; k++) {
 
-			Type** temp = new Type * [N - 1];
-			for (int i = 0; i < N - 1; i++) {
-				temp[i] = new Type[N - 1];
-			}
+			vector<vector<Type>> temp(N - 1, vector<Type>(N - 1));
 
 			for (int i = 0; i < N; i++)
 			{
@@ -602,108 +521,6 @@ double determinant(const matrix<Type>& m, int N)
 			}
 
 			determ += pow(-1, k + 2) * m.data[k][0] * determinant(matrix<Type>(temp, N - 1, N - 1), N - 1);
-
-			for (int i = 0; i < N - 1; i++)
-			{
-				delete[] temp[i];
-			}
-			delete[] temp;
-		}
-		return determ;
-	}
-}
-template<>
-double determinant(const matrix<complex<double>>& m, int N)
-{
-	if (m.columns != m.rows) {
-		return 0;
-	}
-	else if (N == 1) {
-		return m.data[0][0].real();
-	}
-	else if (N == 2) {
-		return m.data[0][0].real() * m.data[1][1].real() - m.data[0][1].real() * m.data[1][0].real();
-	}
-	else if (N >= 3) {
-		double determ = 0;
-
-		for (int k = 0; k < N; k++) {
-
-			complex<double>** temp = new complex<double>*[N - 1];
-			for (int i = 0; i < N - 1; i++) {
-				temp[i] = new complex<double>[N - 1];
-			}
-
-			for (int i = 0; i < N; i++)
-			{
-				for (int j = 1; j < N; j++)
-				{
-					if (i > k)
-					{
-						temp[i - 1][j - 1] = m.data[i][j].real();
-					}
-					if (i < k)
-					{
-						temp[i][j - 1] = m.data[i][j].real();
-					}
-				}
-			}
-
-			determ += pow(-1, k + 2) * m.data[k][0].real() * determinant(matrix<complex<double>>(temp, N - 1, N - 1), N - 1);
-
-			for (int i = 0; i < N - 1; i++)
-			{
-				delete[] temp[i];
-			}
-			delete[] temp;
-		}
-		return determ;
-	}
-}
-template<>
-double determinant(const matrix<complex<float>>& m, int N)
-{
-	if (m.columns != m.rows) {
-		return 0;
-	}
-	else if (N == 1) {
-		return m.data[0][0].real();
-	}
-	else if (N == 2) {
-		return m.data[0][0].real() * m.data[1][1].real() - m.data[0][1].real() * m.data[1][0].real();
-	}
-	else if (N >= 3) {
-		double determ = 0;
-
-		for (int k = 0; k < N; k++) {
-
-			complex<float>** temp = new complex<float>*[N - 1];
-			for (int i = 0; i < N - 1; i++) {
-				temp[i] = new complex<float>[N - 1];
-			}
-
-			for (int i = 0; i < N; i++)
-			{
-				for (int j = 1; j < N; j++)
-				{
-					if (i > k)
-					{
-						temp[i - 1][j - 1] = m.data[i][j].real();
-					}
-					if (i < k)
-					{
-						temp[i][j - 1] = m.data[i][j].real();
-					}
-				}
-			}
-
-			determ += pow(-1, k + 2) * m.data[k][0].real() * determinant(matrix<complex<float>>(temp, N - 1, N - 1), N - 1);
-
-			for (int i = 0; i < N - 1; i++)
-			{
-				delete[] temp[i];
-			}
-			delete[] temp;
 		}
 		return determ;
 	}
